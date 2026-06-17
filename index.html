@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Орфоэпическая викторина · ЕГЭ задание 4</title>
+<title>Орфоэпический обучатель · ЕГЭ задание 4</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { overflow: hidden; }
@@ -148,8 +148,6 @@
 
   .footer { margin-top: 8px; min-height: 54px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .feedback { font-size: 1rem; min-height: 24px; }
-  .feedback .ans { font-weight: 800; color: #3b3bf0; }
-  .feedback .ans b { color: #e23b30; }
   button.next.hidden { visibility: hidden; }
   button.next {
     padding: 12px 22px;
@@ -169,9 +167,13 @@
   /* ---------- режим просмотра ---------- */
   .view { text-align: left; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; width: 100%; }
   .view-controls { margin-bottom: 10px; }
-  .filter { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: #5a6190; cursor: pointer; }
-  .filter input { width: 17px; height: 17px; accent-color: #3b3bf0; }
+  .learned-badge { display: block; width: 100%; border: none; font-family: inherit; cursor: pointer; background: #eef0ff; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; text-align: center; font-size: .92rem; color: #5a6190; transition: background .4s ease, box-shadow .15s; }
+  .learned-badge:hover { box-shadow: 0 0 0 2px #3b3bf0 inset; }
+  .learned-badge b { color: #2faa3a; font-size: 1.15rem; }
+  .learned-badge .badge-hint { display: block; margin-top: 4px; font-size: .82rem; color: #3b3bf0; font-weight: 600; }
   .modes { display: flex; gap: 8px; margin-top: 8px; }
+  .list-badge { background: #eef0ff; border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; font-size: .88rem; color: #5a6190; }
+  .list-badge b { color: #3b3bf0; }
   .mode-btn { flex: 1; padding: 8px; font-size: .82rem; font-weight: 600; color: #3b3bf0; background: #eef0ff; border: 2px solid transparent; border-radius: 10px; cursor: pointer; }
   .mode-btn.active { border-color: #3b3bf0; background: #fff; }
   .pos { color: #9aa0c4; font-weight: 600; font-size: .8rem; }
@@ -195,7 +197,7 @@
   .dots { display: inline-flex; gap: 0.18em; align-items: center; flex-shrink: 0; vertical-align: middle; }
   .dot { width: 0.72em; height: 0.72em; border-radius: 50%; }
   .dot.g { background: #2faa3a; }
-  .dot.r { background: #e23b30; }
+  .dot.ge { background: #fff; box-shadow: inset 0 0 0 0.13em #2faa3a; }
   .view li.hist-row { display: flex; justify-content: space-between; align-items: center; }
 
   .ver { font-size: .72rem; color: #c3c8e0; }
@@ -216,24 +218,9 @@
   .view li { font-size: .98rem; }
   .result .score { font-size: 2.3rem; margin: 10px 0 4px; }
 
-  .qmeter { max-width: 320px; margin: 0 auto 12px; }
-  .qmeter-top { display: flex; justify-content: space-between; font-size: .88rem; color: #5a6190; margin-bottom: 5px; }
-  .qmeter-top b { color: #3b3bf0; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
-  #qsec { font-variant-numeric: tabular-nums; }
-  .qbar-track { height: 8px; background: #eef0ff; border-radius: 6px; overflow: hidden; }
-  #qbar { height: 100%; width: 100%; background: #2faa3a; transition: width .25s linear, background .25s; }
   .result .stats { font-size: .95rem; color: #5a6190; margin-bottom: 14px; }
   .result .stats b { color: #2faa3a; }
   .hist-right { font-size: .85rem; color: #7a82ad; white-space: nowrap; }
-
-  .progress-card { background: #eef0ff; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; transition: background .3s; }
-  .progress-line { font-size: .85rem; color: #5a6190; margin-bottom: 8px; text-align: center; }
-  .progress-line b { color: #3b3bf0; }
-  .progress-track { height: 9px; background: #d9deff; border-radius: 6px; overflow: hidden; }
-  .progress-track > div { height: 100%; width: 0; background: linear-gradient(90deg,#18dcff,#3b3bf0); transition: width .4s ease; }
-  .progress-card.done { background: #e9ffe9; }
-  .progress-card.done .progress-line { color: #2faa3a; font-weight: 700; }
-  .progress-card.done .progress-track > div { background: #2faa3a; }
 
   .hidden { display: none; }
 </style>
@@ -244,24 +231,21 @@
   <!-- стартовый экран -->
   <div id="screen-start" class="start">
     <div class="titlebox">
-      <h1 class="glitch">ОрфоЭпическая викторина</h1>
+      <h1 class="glitch">ОрфоЭпический обучатель</h1>
     </div>
-    <div class="progress-card" id="progress-card">
-      <div class="progress-line" id="progress-line"></div>
-      <div class="progress-track"><div id="progress-fill"></div></div>
-    </div>
+    <button class="learned-badge" id="learned-badge" type="button"></button>
     <button class="btn" id="playbtn" style="width:100%; margin-bottom:10px;">▶ Играть</button>
     <div class="startbtns">
-      <button class="btn ghost" id="viewbtn">📖 Словарик</button>
       <button class="btn ghost hist-open">🕘 История</button>
     </div>
     <div class="footer-row">
       <span class="info-link" id="infobtn">ℹ️ Об игре</span>
-      <span class="ver">v1.1</span>
+      <span class="ver">v1.2</span>
     </div>
     <p class="lead note hidden" id="infonote">
-       Слова — из «Орфоэпического словника&nbsp;2026» (ЕГЭ, задание&nbsp;4): 209 слов по 6 частям речи. За игру — 10 слов, подобранных по твоему прогрессу.<br><br>
-       Отметь букву, на которую падает <b>ударение</b>. За верный ответ — до <b>5 зелёных кружков</b>; чем дольше думаешь, тем меньше (на один каждые 5 секунд). Ошибка или истёкшее время — <b>красный кружок</b>.</p>
+       Слова — из «Орфоэпического словника&nbsp;2026» (ЕГЭ, задание&nbsp;4): 209 слов по 6 частям речи. За игру — 15 случайных ещё не выученных слов.<br><br>
+       Отметь букву, на которую падает <b>ударение</b>. Верный ответ добавляет слову зелёный кружок: первый — <b>пустой</b>, второй делает слово <b>выученным</b>. Ошибка убирает кружок. Выученные слова в игру больше не попадают — но остаются в словарике.<br><br>
+       Плашка «Выучено … из 209» открывает <b>словарик</b>: там все слова с ударением и фильтром «Все / Невыученные / Выученные». В <b>истории</b> — результаты прошлых игр.</p>
   </div>
 
   <!-- экран викторины -->
@@ -270,7 +254,6 @@
       <span id="qcount">Вопрос 1 / 10</span>
       <span id="verdict"></span>
       <span class="bar-right">
-        <span id="scoreline"></span>
         <button id="quitbtn" class="quit" title="Завершить игру">✕</button>
       </span>
     </div>
@@ -278,14 +261,6 @@
 
     <div class="task">Укажите букву, обозначающую ударный гласный звук</div>
     <div class="catwrap"><span class="cat-pill" id="catpill"></span></div>
-
-    <div class="qmeter">
-      <div class="qmeter-top">
-        <span>За ответ: <b id="qvalue"></b></span>
-        <span id="qsec">0 с</span>
-      </div>
-      <div class="qbar-track"><div id="qbar"></div></div>
-    </div>
 
     <div class="word" id="word"></div>
 
@@ -309,6 +284,7 @@
     <div class="titlebox"><h1 class="glitch">ИСТОРИЯ</h1></div>
     <div class="subtitle">Твои последние игры</div>
     <div class="view-scroll" id="historylist"></div>
+    <button class="btn ghost" id="histresetbtn" style="width:100%; margin-top:12px;">🗑 Начать сначала</button>
   </div>
 
   <!-- экран просмотра словарика -->
@@ -317,8 +293,12 @@
     <div class="titlebox"><h1 class="glitch">СЛОВАРИК</h1></div>
     <div class="subtitle">Орфоэпический словник 2026 — те же слова, что в игре</div>
     <div class="view-controls">
-      <label class="filter"><input type="checkbox" id="onlyunlearned"> Только невыученные</label>
-      <div class="modes">
+      <div class="modes" id="filtermodes">
+        <button class="mode-btn active" data-filter="all">Все</button>
+        <button class="mode-btn" data-filter="unlearned">Невыученные</button>
+        <button class="mode-btn" data-filter="learned">Выученные</button>
+      </div>
+      <div class="modes" id="viewmodes">
         <button class="mode-btn active" data-mode="pos">По частям речи</button>
         <button class="mode-btn" data-mode="abc">По алфавиту</button>
       </div>
@@ -404,80 +384,53 @@ function save(key, value) {
 let answers = load(ANS_KEY, {});
 let history = load(HIST_KEY, []);
 
-/* миграция со старого формата answers: "ok"/"err" → { pts, errs, last } */
+/* миграция со старого формата answers (строка / { pts, errs, last }) → уровень 0|1|2 */
 for (const w in answers) {
-  if (typeof answers[w] === "string") {
-    answers[w] = { pts: 0, errs: 0, last: answers[w] };
+  const a = answers[w];
+  if (typeof a === "number") { continue; }
+  if (typeof a === "string") {
+    answers[w] = a === "ok" ? 1 : 0;
+  } else if (a && typeof a === "object") {
+    answers[w] = a.pts >= 100 ? 2 : (a.last === "ok" || a.pts > 0) ? 1 : 0;
+  } else {
+    answers[w] = 0;
   }
 }
 
-function recordAnswer(w, ok, earned) {
-  const a = answers[w] || { pts: 0, errs: 0, last: null };
-  if (ok) {
-    a.pts = Math.max(a.pts, earned);
-    a.last = "ok";
-  } else {
-    a.pts = 0;
-    a.errs = Math.min(5, (a.errs || 0) + 1);
-    a.last = "err";
-  }
-  answers[w] = a;
+const MAX_LVL = 2;
+function wordLvl(w) {
+  return answers[w] || 0;
+}
+function isLearned(w) {
+  return wordLvl(w) >= MAX_LVL;
+}
+function recordAnswer(w, ok) {
+  const lvl = wordLvl(w);
+  answers[w] = ok ? Math.min(MAX_LVL, lvl + 1) : Math.max(0, lvl - 1);
   save(ANS_KEY, answers);
 }
-function recordResult(green, red, correct, total) {
-  history.unshift({ ts: Date.now(), green, red, correct, total });
+function recordResult(correct, total, learned) {
+  history.unshift({ ts: Date.now(), correct, total, learned });
   if (history.length > 50) { history.length = 50; }
   save(HIST_KEY, history);
-}
-function circlesFor(pts) {
-  return Math.round(pts / 20);
 }
 function dotsHTML(n, cls) {
   let dots = "";
   for (let i = 0; i < n; i++) { dots += `<span class="dot ${cls}"></span>`; }
   return `<span class="dots">${dots}</span>`;
 }
-function tally(green, red) {
-  return `${dotsHTML(1, "g")} ${green} &nbsp; ${dotsHTML(1, "r")} ${red}`;
-}
 function statusMark(w) {
-  const a = answers[w];
-  if (!a || a.last == null) { return ""; }
-  const cls = a.last === "ok" ? "g" : "r";
-  const count = a.last === "ok" ? circlesFor(a.pts) : Math.min(5, a.errs || 0);
-  return count > 0 ? " " + dotsHTML(count, cls) : "";
+  const lvl = wordLvl(w);
+  if (lvl <= 0) { return ""; }
+  return " " + dotsHTML(1, lvl >= MAX_LVL ? "g" : "ge");
 }
 
 /* ---------- Логика игры ---------- */
-const ROUND = 10;
-let deck = [], current = 0, score = 0, correctCount = 0, wrongCount = 0, answered = false, stressIdx = -1;
-let qStart = 0, timerId = null;
-const Q_MAX = 100, Q_STEP = 20, Q_EVERY = 5;
+const ROUND = 15;
+let deck = [], current = 0, correctCount = 0, wrongCount = 0, learnedCount = 0, answered = false, stressIdx = -1;
 
 const $ = id => document.getElementById(id);
 
-function questionValue() {
-  const el = Math.floor((Date.now() - qStart) / 1000);
-  return Q_MAX - Math.floor(el / Q_EVERY) * Q_STEP;
-}
-function tick() {
-  if (answered) { return; }
-  const v = questionValue();
-  if (v <= 0) { settle(false, null); return; }
-  const elapsed = (Date.now() - qStart) / 1000;
-  $("qvalue").innerHTML = dotsHTML(circlesFor(v), "g");
-  $("qbar").style.background = v >= 70 ? "#2faa3a" : v >= 40 ? "#f0b400" : "#e23b30";
-  const remaining = Q_EVERY - (elapsed % Q_EVERY);
-  $("qbar").style.width = (remaining / Q_EVERY * 100) + "%";
-  $("qsec").textContent = Math.ceil(remaining) + " с";
-}
-function startTimer() {
-  stopTimer();
-  timerId = setInterval(tick, 200);
-}
-function stopTimer() {
-  if (timerId) { clearInterval(timerId); timerId = null; }
-}
 const screens = {
   start: $("screen-start"), quiz: $("screen-quiz"),
   result: $("screen-result"), view: $("screen-view"), history: $("screen-history")
@@ -494,21 +447,9 @@ function plainShuffle(arr) {
   }
   return a;
 }
-function rankWord(w) {
-  const a = answers[w];
-  if (!a || a.last == null) { return 0; }
-  return a.last === "err" ? 1 : 2;
-}
-function wordPts(w) {
-  const a = answers[w];
-  return a && a.last === "ok" ? a.pts : 0;
-}
 function buildDeck() {
-  const n = Math.min(ROUND, POOL.length);
-  deck = plainShuffle(POOL).sort((a, b) => {
-    const r = rankWord(a.w) - rankWord(b.w);
-    return r !== 0 ? r : wordPts(a.w) - wordPts(b.w);
-  }).slice(0, n);
+  const pool = POOL.filter(it => !isLearned(it.w));
+  deck = plainShuffle(pool).slice(0, ROUND);
 }
 
 function render() {
@@ -517,11 +458,7 @@ function render() {
   const { lower, stress } = analyze(item.w);
   stressIdx = stress;
 
-  qStart = Date.now();
-  tick();
-
   $("qcount").textContent = `Вопрос ${current + 1} / ${deck.length}`;
-  $("scoreline").innerHTML = tally(score, wrongCount);
   $("verdict").innerHTML = "";
   $("progressbar").style.width = (current / deck.length * 100) + "%";
   $("catpill").textContent = item.cat;
@@ -563,7 +500,6 @@ function fitWord() {
 
 function choose(i, btn) {
   if (answered) { return; }
-  if (questionValue() <= 0) { settle(false, null); return; }
   settle(i === stressIdx, btn);
 }
 function settle(correct, btn) {
@@ -574,24 +510,21 @@ function settle(correct, btn) {
 
   if (correct) {
     btn.classList.add("correct");
-    const earned = questionValue();
-    const gained = circlesFor(earned);
-    score += gained;
     correctCount++;
-    recordAnswer(item.w, true, earned);
-    $("verdict").innerHTML = `<span class="v-ok">✅</span> ${dotsHTML(gained, "g")}`;
-    $("feedback").innerHTML = `Верно!`;
+    recordAnswer(item.w, true);
+    const learned = isLearned(item.w);
+    if (learned) { learnedCount++; }
+    $("verdict").innerHTML = `<span class="v-ok">✅</span>`;
+    $("feedback").innerHTML = learned ? `Слово выучено 🎉` : ``;
     beep(true);
   } else {
     if (btn) { btn.classList.add("wrong"); }
     vowels.forEach(v => { if (+v.dataset.i === stressIdx) { v.classList.add("correct"); } });
     wrongCount++;
-    recordAnswer(item.w, false, 0);
-    $("verdict").innerHTML = `<span class="v-err">${btn ? "❌" : "⏱ Время вышло"}</span>`;
-    $("feedback").innerHTML = `Правильно: <span class="ans">${markStress(item.w, "<b>", "</b>")}</span>`;
+    recordAnswer(item.w, false);
+    $("verdict").innerHTML = `<span class="v-err">❌</span>`;
     beep(false);
   }
-  $("scoreline").innerHTML = tally(score, wrongCount);
   $("progressbar").style.width = ((current + 1) / deck.length * 100) + "%";
   $("nextbtn").textContent = current + 1 < deck.length ? "Далее →" : "Итог →";
   $("nextbtn").classList.remove("hidden");
@@ -630,61 +563,43 @@ function next() {
 }
 
 function showResult() {
-  stopTimer();
-  recordResult(score, wrongCount, correctCount, deck.length);
+  recordResult(correctCount, deck.length, learnedCount);
   show("result");
-  $("finalscore").innerHTML = tally(score, wrongCount);
-  $("stats").innerHTML = `Правильных: <b>${correctCount} / ${deck.length}</b>`;
+  $("finalscore").innerHTML = `<b>${correctCount} / ${deck.length}</b>`;
+  $("stats").innerHTML = `Слов выучено: <b>${learnedCount}</b>`;
 }
 
 function start() {
   current = 0;
-  score = 0;
   correctCount = 0;
   wrongCount = 0;
+  learnedCount = 0;
   buildDeck();
-  startTimer();
+  if (!deck.length) {
+    alert("Все слова выучены 🎉");
+    return;
+  }
   show("quiz");
   render();
 }
 
-function progressTotal() {
-  let sum = 0, total = 0, learned = 0, maxed = 0;
-  for (const cat in GROUPS) {
-    for (const w of GROUPS[cat]) {
-      total++;
-      const p = wordPts(w);
-      sum += p;
-      if (p > 0) { learned++; }
-      if (p === 100) { maxed++; }
-    }
-  }
-  return { sum, max: total * 100, total, learned, maxed };
-}
-function renderStart() {
-  const { sum, max, total, learned, maxed } = progressTotal();
-  const card = $("progress-card");
-  const done = maxed === total;
-  card.classList.toggle("done", done);
-  if (done) {
-    $("progress-line").innerHTML = `🏆 Все ${total} слов выучены на максимум!`;
-    $("progress-fill").style.width = "100%";
-  } else {
-    $("progress-line").innerHTML = `Прогресс: <b>${sum}</b> / ${max} · выучено ${learned} / ${total}`;
-    $("progress-fill").style.width = (sum / max * 100) + "%";
-  }
-}
 function goStart() {
-  renderStart();
+  const learned = POOL.filter(it => isLearned(it.w)).length;
+  const pct = POOL.length ? learned / POOL.length * 100 : 0;
+  const badge = $("learned-badge");
+  badge.innerHTML = `Выучено <b>${learned}</b> из ${POOL.length} слов<span class="badge-hint">📖 Открыть словарик ›</span>`;
+  badge.style.background = `linear-gradient(90deg, #bfe7c1 ${pct}%, #eef0ff ${pct}%)`;
   show("start");
 }
 
 function buildGroup(title, liHtmls, liClass) {
   const div = document.createElement("div");
   div.className = "group";
-  const h = document.createElement("h3");
-  h.textContent = title;
-  div.appendChild(h);
+  if (title) {
+    const h = document.createElement("h3");
+    h.textContent = title;
+    div.appendChild(h);
+  }
   const ul = document.createElement("ul");
   for (const html of liHtmls) {
     const li = document.createElement("li");
@@ -703,17 +618,21 @@ const POS_SHORT = {
   "Деепричастие": "дееприч.",
   "Наречие": "нареч."
 };
-let viewMode = "pos";
+let viewMode = "pos", viewFilter = "all";
 
 function wordCell(w, cat) {
   const pos = cat ? ` <small class="pos">${POS_SHORT[cat]}</small>` : "";
   return `<span>${markStress(w, '<span class="rstr">', "</span>")}${pos}</span>${statusMark(w)}`;
 }
 function renderView() {
-  const onlyUnlearned = $("onlyunlearned").checked;
-  const keep = w => !onlyUnlearned || wordPts(w) < 100;
+  const keep = w => viewFilter === "all" ||
+    (viewFilter === "learned" ? isLearned(w) : !isLearned(w));
+  const empty = viewFilter === "learned" ? "Выученных слов пока нет" : "Все слова выучены 🎉";
   const el = $("viewlist");
-  el.innerHTML = "";
+
+  const count = POOL.filter(it => keep(it.w)).length;
+  const label = { all: "Всего", unlearned: "Невыученных", learned: "Выученных" }[viewFilter];
+  el.innerHTML = `<div class="list-badge">${label}: <b>${count}</b> слов</div>`;
 
   if (viewMode === "abc") {
     const all = [];
@@ -721,8 +640,8 @@ function renderView() {
       for (const w of GROUPS[cat]) { if (keep(w)) { all.push({ w, cat }); } }
     }
     all.sort((a, b) => a.w.toLowerCase().localeCompare(b.w.toLowerCase(), "ru"));
-    if (!all.length) { el.innerHTML = `<div class="empty">Все слова выучены 🎉</div>`; return; }
-    el.appendChild(buildGroup(`Все слова (${all.length})`,
+    if (!all.length) { el.innerHTML = `<div class="empty">${empty}</div>`; return; }
+    el.appendChild(buildGroup("",
       all.map(({ w, cat }) => wordCell(w, cat)), "word-row"));
     return;
   }
@@ -734,7 +653,7 @@ function renderView() {
     total += words.length;
     el.appendChild(buildGroup(`${cat} (${words.length})`, words.map(w => wordCell(w)), "word-row"));
   }
-  if (!total) { el.innerHTML = `<div class="empty">Все слова выучены 🎉</div>`; }
+  if (!total) { el.innerHTML = `<div class="empty">${empty}</div>`; }
 }
 
 function fmtDate(ts) {
@@ -753,22 +672,29 @@ function renderHistory() {
   history.forEach(h => {
     const li = document.createElement("li");
     li.className = "hist-row";
-    li.innerHTML = `<span>${fmtDate(h.ts)}</span><span class="hist-right">${tally(h.green ?? 0, h.red ?? 0)}</span>`;
+    li.innerHTML = `<span>${fmtDate(h.ts)}</span><span class="hist-right">${h.correct ?? h.green ?? 0} / ${h.total ?? 0} · выучено ${h.learned ?? 0}</span>`;
     ul.appendChild(li);
   });
   el.appendChild(ul);
 }
 
-$("viewbtn").onclick = () => {
+function openView() {
   renderView();
   $("viewlist").scrollTop = 0;
   show("view");
-};
-$("onlyunlearned").addEventListener("change", renderView);
-document.querySelectorAll(".mode-btn").forEach(b => {
+}
+$("learned-badge").onclick = openView;
+document.querySelectorAll("#viewmodes .mode-btn").forEach(b => {
   b.onclick = () => {
     viewMode = b.dataset.mode;
-    document.querySelectorAll(".mode-btn").forEach(x => x.classList.toggle("active", x === b));
+    document.querySelectorAll("#viewmodes .mode-btn").forEach(x => x.classList.toggle("active", x === b));
+    renderView();
+  };
+});
+document.querySelectorAll("#filtermodes .mode-btn").forEach(b => {
+  b.onclick = () => {
+    viewFilter = b.dataset.filter;
+    document.querySelectorAll("#filtermodes .mode-btn").forEach(x => x.classList.toggle("active", x === b));
     renderView();
   };
 });
@@ -783,16 +709,25 @@ document.querySelectorAll(".hist-open").forEach(b => {
 });
 $("histback").onclick = () => goStart();
 $("quitbtn").onclick = () => {
-  if (confirm("Завершить игру? Игра не попадёт в историю, но баллы за отвеченные слова сохранятся.")) { stopTimer(); goStart(); }
+  if (confirm("Завершить игру? Игра не попадёт в историю, но прогресс по отвеченным словам сохранится.")) { goStart(); }
 };
 
 $("playbtn").onclick = () => start();
+$("histresetbtn").onclick = () => {
+  if (confirm("Сбросить весь прогресс? Выученные слова и история игр будут стёрты без возможности восстановить.")) {
+    answers = {};
+    history = [];
+    save(ANS_KEY, answers);
+    save(HIST_KEY, history);
+    renderHistory();
+  }
+};
 $("nextbtn").onclick = next;
 $("restartbtn").onclick = () => goStart();
 
 $("infobtn").onclick = () => $("infonote").classList.toggle("hidden");
 
-renderStart();
+goStart();
 </script>
 </body>
 </html>
