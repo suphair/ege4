@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Орфоэпическая викторина · ЕГЭ задание 4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { overflow: hidden; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #f4f6ff;
+    background-image: radial-gradient(#dfe5ff 1px, transparent 1px);
+    background-size: 22px 22px;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    color: #20264a;
+  }
+  .game {
+    position: relative;
+    width: 100%;
+    max-width: 430px;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 18px 50px rgba(70,90,200,.18);
+    padding: 26px 28px 30px;
+    overflow: hidden;
+  }
+  .glitch {
+    display: inline-block;
+    color: #3b3bf0;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+  .titlebox {
+    position: relative;
+    background: #aeb8f4;
+    border-radius: 14px;
+    padding: 14px 18px;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .footer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+  .info-link { font-size: .82rem; color: #9aa0c4; cursor: pointer; }
+  .info-link:hover { color: #3b3bf0; text-decoration: underline; }
+  .titlebox h1 { font-size: 1.7rem; }
+  .subtitle { text-align: center; color: #7a82ad; margin-bottom: 18px; font-size: .92rem; }
+
+  /* ---------- стартовый экран ---------- */
+  .start { text-align: center; }
+  .start p.lead { color: #4a527e; line-height: 1.55; margin: 0 0 16px; font-size: .95rem; }
+  .start p.lead.note { font-size: .82rem; color: #7a82ad; text-align: left; margin: 8px 0 0; }
+  .startbtns { display: flex; gap: 8px; max-width: 360px; margin: 0 auto; }
+  .startbtns .btn { flex: 1; padding: 11px 6px; font-size: .85rem; }
+  .btn {
+    padding: 13px 22px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: #3b3bf0;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform .08s, background .15s;
+  }
+  .btn:hover { background: #2d2dd8; }
+  .btn:active { transform: translateY(2px); }
+  .btn.ghost { background: #eef0ff; color: #3b3bf0; }
+  .btn.ghost:hover { background: #e1e5ff; }
+
+  /* ---------- прогресс ---------- */
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .9rem;
+    color: #5a6190;
+    margin-bottom: 10px;
+  }
+  #verdict { font-weight: 800; }
+  #verdict .v-ok { color: #2faa3a; }
+  #verdict .v-err { color: #e23b30; }
+  .bar-right { display: flex; align-items: center; gap: 8px; }
+  .quit {
+    background: none; border: none;
+    color: #b0b4cc; font-size: 1.05rem; font-weight: 700;
+    cursor: pointer; line-height: 1;
+    padding: 2px 7px; border-radius: 6px;
+  }
+  .quit:hover { color: #e23b30; background: #ffe9e9; }
+  .progress { height: 10px; background: #eef0ff; border-radius: 8px; overflow: hidden; margin-bottom: 22px; }
+  .progress > div { height: 100%; width: 0; background: linear-gradient(90deg,#18dcff,#3b3bf0); transition: width .35s ease; }
+
+  .task { text-align: center; color: #7a82ad; font-size: .9rem; margin-bottom: 6px; }
+  .cat-pill {
+    display: inline-block;
+    background: #aeb8f4;
+    color: #2a2f60;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: .8rem;
+    margin: 0 auto 18px;
+  }
+  .catwrap { text-align: center; }
+
+  .word {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: baseline;
+    text-align: center;
+    font-size: clamp(1.9rem, 8vw, 3.4rem);
+    font-weight: 800;
+    color: #3b3bf0;
+    margin-bottom: 8px;
+    user-select: none;
+    line-height: 1.05;
+  }
+  .word .cons { padding: 0 1px; }
+  .word .vowel {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 6px 5px;
+    margin: 0;
+    cursor: pointer;
+    border-bottom: 3px dotted #b9bff0;
+    transition: transform .1s, color .15s, background .15s;
+    border-radius: 6px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .word .vowel:hover:not(:disabled) { color: #e2398f; transform: translateY(-3px); }
+  .word .vowel:disabled { cursor: default; border-bottom-color: transparent; }
+  .word .vowel.correct { color: #e23b30; background: #e9ffe9; border-bottom: 3px solid #2faa3a; }
+  .word .vowel.wrong { color: #b0b4cc; text-decoration: line-through; background: #ffe9e9; }
+
+  .footer { margin-top: 8px; min-height: 54px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .feedback { font-size: 1rem; min-height: 24px; }
+  .feedback .ans { font-weight: 800; color: #3b3bf0; }
+  .feedback .ans b { color: #e23b30; }
+  button.next.hidden { visibility: hidden; }
+  button.next {
+    padding: 12px 22px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: #2faa3a;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  button.next:active { transform: translateY(2px); }
+
+  .result { text-align: center; }
+  .result .score { font-size: 2.8rem; font-weight: 800; color: #3b3bf0; margin: 14px 0 6px; }
+  /* ---------- режим просмотра ---------- */
+  .view { text-align: left; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; width: 100%; }
+  .view-controls { margin-bottom: 10px; }
+  .filter { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: #5a6190; cursor: pointer; }
+  .filter input { width: 17px; height: 17px; accent-color: #3b3bf0; }
+  .modes { display: flex; gap: 8px; margin-top: 8px; }
+  .mode-btn { flex: 1; padding: 8px; font-size: .82rem; font-weight: 600; color: #3b3bf0; background: #eef0ff; border: 2px solid transparent; border-radius: 10px; cursor: pointer; }
+  .mode-btn.active { border-color: #3b3bf0; background: #fff; }
+  .pos { color: #9aa0c4; font-weight: 600; font-size: .8rem; }
+  .view-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 6px; }
+  .view .empty { text-align: center; color: #9aa0c4; padding: 24px 0; }
+  .view .group { margin-bottom: 16px; }
+  .view .group h3 {
+    position: sticky; top: 0;
+    background: #aeb8f4; color: #2a2f60;
+    border-radius: 8px; padding: 7px 12px;
+    font-size: 1.05rem; margin-bottom: 8px;
+  }
+  .view ul { list-style: none; }
+  .view li {
+    padding: 5px 4px;
+    border-bottom: 1px solid #f0f1fb;
+    font-size: 1.02rem; font-weight: 600; color: #3b3bf0;
+  }
+  .rstr { color: #e23b30; font-weight: 800; }
+  .view li.word-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .dots { display: inline-flex; gap: 0.18em; align-items: center; flex-shrink: 0; vertical-align: middle; }
+  .dot { width: 0.72em; height: 0.72em; border-radius: 50%; }
+  .dot.g { background: #2faa3a; }
+  .dot.r { background: #e23b30; }
+  .view li.hist-row { display: flex; justify-content: space-between; align-items: center; }
+
+  .ver { font-size: .72rem; color: #c3c8e0; }
+
+  /* ---------- мобильная (вертикальная) раскладка — всегда ---------- */
+  body { padding: 8px; }
+  .game { padding: 16px 14px 28px; border-radius: 16px; }
+  .titlebox { padding: 11px 14px; margin-bottom: 10px; }
+  .titlebox h1 { font-size: 1.4rem; }
+  .subtitle { font-size: .84rem; margin-bottom: 12px; }
+  .start p.lead { font-size: .88rem; line-height: 1.45; margin-bottom: 12px; }
+  .start p.lead.note { font-size: .78rem; margin-bottom: 16px; }
+  .startbtns { max-width: 100%; flex-direction: column; gap: 8px; }
+  .startbtns .btn { padding: 12px; font-size: .95rem; white-space: normal; }
+  .bar { font-size: .82rem; gap: 6px; }
+  .progress { margin-bottom: 16px; }
+  .view .group h3 { font-size: .98rem; }
+  .view li { font-size: .98rem; }
+  .result .score { font-size: 2.3rem; margin: 10px 0 4px; }
+
+  .qmeter { max-width: 320px; margin: 0 auto 12px; }
+  .qmeter-top { display: flex; justify-content: space-between; font-size: .88rem; color: #5a6190; margin-bottom: 5px; }
+  .qmeter-top b { color: #3b3bf0; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+  #qsec { font-variant-numeric: tabular-nums; }
+  .qbar-track { height: 8px; background: #eef0ff; border-radius: 6px; overflow: hidden; }
+  #qbar { height: 100%; width: 100%; background: #2faa3a; transition: width .25s linear, background .25s; }
+  .result .stats { font-size: .95rem; color: #5a6190; margin-bottom: 14px; }
+  .result .stats b { color: #2faa3a; }
+  .hist-right { font-size: .85rem; color: #7a82ad; white-space: nowrap; }
+
+  .progress-card { background: #eef0ff; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; transition: background .3s; }
+  .progress-line { font-size: .85rem; color: #5a6190; margin-bottom: 8px; text-align: center; }
+  .progress-line b { color: #3b3bf0; }
+  .progress-track { height: 9px; background: #d9deff; border-radius: 6px; overflow: hidden; }
+  .progress-track > div { height: 100%; width: 0; background: linear-gradient(90deg,#18dcff,#3b3bf0); transition: width .4s ease; }
+  .progress-card.done { background: #e9ffe9; }
+  .progress-card.done .progress-line { color: #2faa3a; font-weight: 700; }
+  .progress-card.done .progress-track > div { background: #2faa3a; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="game">
+
+  <!-- стартовый экран -->
+  <div id="screen-start" class="start">
+    <div class="titlebox">
+      <h1 class="glitch">ОрфоЭпическая викторина</h1>
+    </div>
+    <div class="progress-card" id="progress-card">
+      <div class="progress-line" id="progress-line"></div>
+      <div class="progress-track"><div id="progress-fill"></div></div>
+    </div>
+    <button class="btn" id="playbtn" style="width:100%; margin-bottom:10px;">▶ Играть</button>
+    <div class="startbtns">
+      <button class="btn ghost" id="viewbtn">📖 Словарик</button>
+      <button class="btn ghost hist-open">🕘 История</button>
+    </div>
+    <div class="footer-row">
+      <span class="info-link" id="infobtn">ℹ️ Об игре</span>
+      <span class="ver">v1.1</span>
+    </div>
+    <p class="lead note hidden" id="infonote">
+       Слова — из «Орфоэпического словника&nbsp;2026» (ЕГЭ, задание&nbsp;4): 209 слов по 6 частям речи. За игру — 10 слов, подобранных по твоему прогрессу.<br><br>
+       Отметь букву, на которую падает <b>ударение</b>. За верный ответ — до <b>5 зелёных кружков</b>; чем дольше думаешь, тем меньше (на один каждые 5 секунд). Ошибка или истёкшее время — <b>красный кружок</b>.</p>
+  </div>
+
+  <!-- экран викторины -->
+  <div id="screen-quiz" class="hidden">
+    <div class="bar">
+      <span id="qcount">Вопрос 1 / 10</span>
+      <span id="verdict"></span>
+      <span class="bar-right">
+        <span id="scoreline"></span>
+        <button id="quitbtn" class="quit" title="Завершить игру">✕</button>
+      </span>
+    </div>
+    <div class="progress"><div id="progressbar"></div></div>
+
+    <div class="task">Укажите букву, обозначающую ударный гласный звук</div>
+    <div class="catwrap"><span class="cat-pill" id="catpill"></span></div>
+
+    <div class="qmeter">
+      <div class="qmeter-top">
+        <span>За ответ: <b id="qvalue"></b></span>
+        <span id="qsec">0 с</span>
+      </div>
+      <div class="qbar-track"><div id="qbar"></div></div>
+    </div>
+
+    <div class="word" id="word"></div>
+
+    <div class="footer">
+      <span class="feedback" id="feedback"></span>
+      <button class="next hidden" id="nextbtn">Далее →</button>
+    </div>
+  </div>
+
+  <!-- экран результата -->
+  <div id="screen-result" class="result hidden">
+    <div class="titlebox"><h1 class="glitch">РЕЗУЛЬТАТ</h1></div>
+    <div class="score" id="finalscore"></div>
+    <div class="stats" id="stats"></div>
+    <button class="btn" id="restartbtn">OK</button>
+  </div>
+
+  <!-- экран истории -->
+  <div id="screen-history" class="view hidden">
+    <button class="btn ghost" id="histback" style="margin-bottom:12px; width:100%;">← Назад</button>
+    <div class="titlebox"><h1 class="glitch">ИСТОРИЯ</h1></div>
+    <div class="subtitle">Твои последние игры</div>
+    <div class="view-scroll" id="historylist"></div>
+  </div>
+
+  <!-- экран просмотра словарика -->
+  <div id="screen-view" class="view hidden">
+    <button class="btn ghost" id="viewback" style="margin-bottom:12px; width:100%;">← Назад</button>
+    <div class="titlebox"><h1 class="glitch">СЛОВАРИК</h1></div>
+    <div class="subtitle">Орфоэпический словник 2026 — те же слова, что в игре</div>
+    <div class="view-controls">
+      <label class="filter"><input type="checkbox" id="onlyunlearned"> Только невыученные</label>
+      <div class="modes">
+        <button class="mode-btn active" data-mode="pos">По частям речи</button>
+        <button class="mode-btn" data-mode="abc">По алфавиту</button>
+      </div>
+    </div>
+    <div class="view-scroll" id="viewlist"></div>
+  </div>
+
+</div>
+
+<script>
+/* ---------- Орфоэпический словник 2026 (заглавная буква = ударная) ---------- */
+const GROUPS = {
+  "Имя существительное": [
+    "аэропОрты","бАнты","бОроду","бухгАлтеров","вероисповЕдание","водопровОд","газопровОд",
+    "граждАнство","дефИс","дешевИзна","диспансЕр","договорЁнность","докумЕнт","досУг","еретИк",
+    "жалюзИ","знАчимость","Иксы","каталОг","квартАл","киломЕтр","кОнусов","корЫсть","крАны",
+    "кремЕнь","лЕкторов","лОктя","лыжнЯ","мЕстностей","намЕрение","нЕдруг","недУг","некролОг",
+    "нЕнависть","нефтепровОд","новостЕй","нОгтя","Отрочество","партЕр","портфЕль","придАное",
+    "призЫв","свЁкла","сирОты","созЫв","сосредотОчение","срЕдства","стАтуя","столЯр","тамОжня",
+    "тОрты","тУфля","цемЕнт","цЕнтнер","цепОчка","шАрфы","шофЁр","экспЕрт"
+  ],
+  "Имя прилагательное": [
+    "вернА","знАчимый","красИвее","красИвейший","кУхонный","ловкА","мозаИчный","оптОвый",
+    "прозорлИвый","прозорлИва","слИвовый"
+  ],
+  "Глагол": [
+    "бралА","бралАсь","взялА","взялАсь","влилАсь","ворвалАсь","воспринЯть","воспринялА",
+    "воссоздалА","вручИт","гналА","гналАсь","добралА","добралАсь","дождалАсь","дозвонИтся",
+    "дозИровать","ждалА","закУпорить","занЯть","зАнял","занялА","зАняли","заперлА",
+    "запломбировАть","защемИт","звалА","звонИт","кАшлянуть","клАла","клЕить","крАлась",
+    "кровоточИть","лгалА","лилА","лилАсь","наделИт","надорвалАсь","назвалАсь","накренИтся",
+    "налилА","нарвалА","начАть","нАчал","началА","нАчали","обзвонИт","облегчИт","облилАсь",
+    "обнялАсь","обогналА","ободралА","ободрИть","ободрИться","обострИть","одолжИть","озлОбить",
+    "оклЕить","окружИт","опОшлить","освЕдомиться","отбылА","отдалА","откУпорить","отозвалА",
+    "отозвалАсь","перезвонИт","перелилА","плодоносИть","пломбировАть","повторИт","позвалА",
+    "позвонИт","полилА","положИть","положИл","понЯть","понялА","послАла","прибЫть","прИбыл",
+    "прибылА","прИбыли","принЯть","прИнял","принялА","прИняли","рвалА","сверлИт","снялА",
+    "создалА","сорвалА","убралА","углубИть","укрепИт","чЕрпать","щемИт","щЁлкать"
+  ],
+  "Причастие": [
+    "довезЁнный","зАгнутый","зАнятый","занятА","зАпертый","заселЁнный","заселенА","кровоточАщий",
+    "нажИвший","налИвший","нанЯвшийся","начАвший","нАчатый","низведЁнный","облегчЁнный",
+    "ободрЁнный","обострЁнный","отключЁнный","повторЁнный","поделЁнный","понЯвший","прИнятый",
+    "принятА","приручЁнный","прожИвший","снятА","сОгнутый","углублЁнный"
+  ],
+  "Деепричастие": [
+    "закУпорив","начАв","начАвшись","отдАв","понЯв","прибЫв","создАв"
+  ],
+  "Наречие": [
+    "вОвремя","дОверху","дОнизу","дОсуха","зАсветло","надОлго","ненадОлго"
+  ]
+};
+
+const POOL = [];
+for (const cat in GROUPS) {
+  for (const w of GROUPS[cat]) { POOL.push({ w, cat }); }
+}
+
+const VOWELS = new Set("аеёиоуыэюя");
+
+function analyze(word) {
+  const chars = [...word];
+  let stress = -1;
+  for (let i = 0; i < chars.length; i++) {
+    if (chars[i] !== chars[i].toLowerCase()) { stress = i; break; }
+  }
+  return { lower: word.toLowerCase(), stress };
+}
+
+function markStress(word, open, close) {
+  const { lower, stress } = analyze(word);
+  return [...lower].map((ch, i) => i === stress ? open + ch + close : ch).join("");
+}
+
+/* ---------- Прогресс (localStorage): баллы по словам + журнал игр ---------- */
+const ANS_KEY = "ege4_answers", HIST_KEY = "ege4_history";
+function load(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (e) { return fallback; }
+}
+function save(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* недоступно — игнорируем */ }
+}
+let answers = load(ANS_KEY, {});
+let history = load(HIST_KEY, []);
+
+/* миграция со старого формата answers: "ok"/"err" → { pts, errs, last } */
+for (const w in answers) {
+  if (typeof answers[w] === "string") {
+    answers[w] = { pts: 0, errs: 0, last: answers[w] };
+  }
+}
+
+function recordAnswer(w, ok, earned) {
+  const a = answers[w] || { pts: 0, errs: 0, last: null };
+  if (ok) {
+    a.pts = Math.max(a.pts, earned);
+    a.last = "ok";
+  } else {
+    a.pts = 0;
+    a.errs = Math.min(5, (a.errs || 0) + 1);
+    a.last = "err";
+  }
+  answers[w] = a;
+  save(ANS_KEY, answers);
+}
+function recordResult(green, red, correct, total) {
+  history.unshift({ ts: Date.now(), green, red, correct, total });
+  if (history.length > 50) { history.length = 50; }
+  save(HIST_KEY, history);
+}
+function circlesFor(pts) {
+  return Math.round(pts / 20);
+}
+function dotsHTML(n, cls) {
+  let dots = "";
+  for (let i = 0; i < n; i++) { dots += `<span class="dot ${cls}"></span>`; }
+  return `<span class="dots">${dots}</span>`;
+}
+function tally(green, red) {
+  return `${dotsHTML(1, "g")} ${green} &nbsp; ${dotsHTML(1, "r")} ${red}`;
+}
+function statusMark(w) {
+  const a = answers[w];
+  if (!a || a.last == null) { return ""; }
+  const cls = a.last === "ok" ? "g" : "r";
+  const count = a.last === "ok" ? circlesFor(a.pts) : Math.min(5, a.errs || 0);
+  return count > 0 ? " " + dotsHTML(count, cls) : "";
+}
+
+/* ---------- Логика игры ---------- */
+const ROUND = 10;
+let deck = [], current = 0, score = 0, correctCount = 0, wrongCount = 0, answered = false, stressIdx = -1;
+let qStart = 0, timerId = null;
+const Q_MAX = 100, Q_STEP = 20, Q_EVERY = 5;
+
+const $ = id => document.getElementById(id);
+
+function questionValue() {
+  const el = Math.floor((Date.now() - qStart) / 1000);
+  return Q_MAX - Math.floor(el / Q_EVERY) * Q_STEP;
+}
+function tick() {
+  if (answered) { return; }
+  const v = questionValue();
+  if (v <= 0) { settle(false, null); return; }
+  const elapsed = (Date.now() - qStart) / 1000;
+  $("qvalue").innerHTML = dotsHTML(circlesFor(v), "g");
+  $("qbar").style.background = v >= 70 ? "#2faa3a" : v >= 40 ? "#f0b400" : "#e23b30";
+  const remaining = Q_EVERY - (elapsed % Q_EVERY);
+  $("qbar").style.width = (remaining / Q_EVERY * 100) + "%";
+  $("qsec").textContent = Math.ceil(remaining) + " с";
+}
+function startTimer() {
+  stopTimer();
+  timerId = setInterval(tick, 200);
+}
+function stopTimer() {
+  if (timerId) { clearInterval(timerId); timerId = null; }
+}
+const screens = {
+  start: $("screen-start"), quiz: $("screen-quiz"),
+  result: $("screen-result"), view: $("screen-view"), history: $("screen-history")
+};
+function show(name) {
+  for (const k in screens) { screens[k].classList.toggle("hidden", k !== name); }
+}
+
+function plainShuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function rankWord(w) {
+  const a = answers[w];
+  if (!a || a.last == null) { return 0; }
+  return a.last === "err" ? 1 : 2;
+}
+function wordPts(w) {
+  const a = answers[w];
+  return a && a.last === "ok" ? a.pts : 0;
+}
+function buildDeck() {
+  const n = Math.min(ROUND, POOL.length);
+  deck = plainShuffle(POOL).sort((a, b) => {
+    const r = rankWord(a.w) - rankWord(b.w);
+    return r !== 0 ? r : wordPts(a.w) - wordPts(b.w);
+  }).slice(0, n);
+}
+
+function render() {
+  answered = false;
+  const item = deck[current];
+  const { lower, stress } = analyze(item.w);
+  stressIdx = stress;
+
+  qStart = Date.now();
+  tick();
+
+  $("qcount").textContent = `Вопрос ${current + 1} / ${deck.length}`;
+  $("scoreline").innerHTML = tally(score, wrongCount);
+  $("verdict").innerHTML = "";
+  $("progressbar").style.width = (current / deck.length * 100) + "%";
+  $("catpill").textContent = item.cat;
+  $("feedback").innerHTML = "";
+  $("nextbtn").classList.add("hidden");
+
+  const wordEl = $("word");
+  wordEl.innerHTML = "";
+  [...lower].forEach((ch, i) => {
+    if (VOWELS.has(ch)) {
+      const b = document.createElement("button");
+      b.className = "vowel";
+      b.dataset.i = i;
+      b.textContent = ch === "ё" ? "е" : ch;
+      b.onclick = () => choose(i, b);
+      wordEl.appendChild(b);
+    } else {
+      const s = document.createElement("span");
+      s.className = "cons";
+      s.textContent = ch;
+      wordEl.appendChild(s);
+    }
+  });
+  fitWord();
+}
+
+function fitWord() {
+  const el = $("word");
+  el.style.fontSize = "";
+  if (el.scrollWidth <= el.clientWidth) { return; }
+  let size = parseFloat(getComputedStyle(el).fontSize) * el.clientWidth / el.scrollWidth;
+  el.style.fontSize = size + "px";
+  let guard = 20;
+  while (el.scrollWidth > el.clientWidth + 1 && size > 12 && guard-- > 0) {
+    size -= 1;
+    el.style.fontSize = size + "px";
+  }
+}
+
+function choose(i, btn) {
+  if (answered) { return; }
+  if (questionValue() <= 0) { settle(false, null); return; }
+  settle(i === stressIdx, btn);
+}
+function settle(correct, btn) {
+  answered = true;
+  const item = deck[current];
+  const vowels = $("word").querySelectorAll(".vowel");
+  vowels.forEach(v => v.disabled = true);
+
+  if (correct) {
+    btn.classList.add("correct");
+    const earned = questionValue();
+    const gained = circlesFor(earned);
+    score += gained;
+    correctCount++;
+    recordAnswer(item.w, true, earned);
+    $("verdict").innerHTML = `<span class="v-ok">✅</span> ${dotsHTML(gained, "g")}`;
+    $("feedback").innerHTML = `Верно!`;
+    beep(true);
+  } else {
+    if (btn) { btn.classList.add("wrong"); }
+    vowels.forEach(v => { if (+v.dataset.i === stressIdx) { v.classList.add("correct"); } });
+    wrongCount++;
+    recordAnswer(item.w, false, 0);
+    $("verdict").innerHTML = `<span class="v-err">${btn ? "❌" : "⏱ Время вышло"}</span>`;
+    $("feedback").innerHTML = `Правильно: <span class="ans">${markStress(item.w, "<b>", "</b>")}</span>`;
+    beep(false);
+  }
+  $("scoreline").innerHTML = tally(score, wrongCount);
+  $("progressbar").style.width = ((current + 1) / deck.length * 100) + "%";
+  $("nextbtn").textContent = current + 1 < deck.length ? "Далее →" : "Итог →";
+  $("nextbtn").classList.remove("hidden");
+}
+
+
+let audioCtx = null;
+function beep(ok) {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "square";
+    o.connect(g); g.connect(audioCtx.destination);
+    const t = audioCtx.currentTime;
+    if (ok) {
+      o.frequency.setValueAtTime(660, t);
+      o.frequency.setValueAtTime(990, t + 0.09);
+    } else {
+      o.frequency.setValueAtTime(196, t);
+      o.frequency.setValueAtTime(130, t + 0.12);
+    }
+    g.gain.setValueAtTime(0.07, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    o.start(t); o.stop(t + 0.22);
+  } catch (e) { /* звук недоступен — игнорируем */ }
+}
+
+function next() {
+  current++;
+  if (current < deck.length) {
+    render();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  stopTimer();
+  recordResult(score, wrongCount, correctCount, deck.length);
+  show("result");
+  $("finalscore").innerHTML = tally(score, wrongCount);
+  $("stats").innerHTML = `Правильных: <b>${correctCount} / ${deck.length}</b>`;
+}
+
+function start() {
+  current = 0;
+  score = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  buildDeck();
+  startTimer();
+  show("quiz");
+  render();
+}
+
+function progressTotal() {
+  let sum = 0, total = 0, learned = 0, maxed = 0;
+  for (const cat in GROUPS) {
+    for (const w of GROUPS[cat]) {
+      total++;
+      const p = wordPts(w);
+      sum += p;
+      if (p > 0) { learned++; }
+      if (p === 100) { maxed++; }
+    }
+  }
+  return { sum, max: total * 100, total, learned, maxed };
+}
+function renderStart() {
+  const { sum, max, total, learned, maxed } = progressTotal();
+  const card = $("progress-card");
+  const done = maxed === total;
+  card.classList.toggle("done", done);
+  if (done) {
+    $("progress-line").innerHTML = `🏆 Все ${total} слов выучены на максимум!`;
+    $("progress-fill").style.width = "100%";
+  } else {
+    $("progress-line").innerHTML = `Прогресс: <b>${sum}</b> / ${max} · выучено ${learned} / ${total}`;
+    $("progress-fill").style.width = (sum / max * 100) + "%";
+  }
+}
+function goStart() {
+  renderStart();
+  show("start");
+}
+
+function buildGroup(title, liHtmls, liClass) {
+  const div = document.createElement("div");
+  div.className = "group";
+  const h = document.createElement("h3");
+  h.textContent = title;
+  div.appendChild(h);
+  const ul = document.createElement("ul");
+  for (const html of liHtmls) {
+    const li = document.createElement("li");
+    if (liClass) { li.className = liClass; }
+    li.innerHTML = html;
+    ul.appendChild(li);
+  }
+  div.appendChild(ul);
+  return div;
+}
+const POS_SHORT = {
+  "Имя существительное": "сущ.",
+  "Имя прилагательное": "прил.",
+  "Глагол": "глаг.",
+  "Причастие": "прич.",
+  "Деепричастие": "дееприч.",
+  "Наречие": "нареч."
+};
+let viewMode = "pos";
+
+function wordCell(w, cat) {
+  const pos = cat ? ` <small class="pos">${POS_SHORT[cat]}</small>` : "";
+  return `<span>${markStress(w, '<span class="rstr">', "</span>")}${pos}</span>${statusMark(w)}`;
+}
+function renderView() {
+  const onlyUnlearned = $("onlyunlearned").checked;
+  const keep = w => !onlyUnlearned || wordPts(w) < 100;
+  const el = $("viewlist");
+  el.innerHTML = "";
+
+  if (viewMode === "abc") {
+    const all = [];
+    for (const cat in GROUPS) {
+      for (const w of GROUPS[cat]) { if (keep(w)) { all.push({ w, cat }); } }
+    }
+    all.sort((a, b) => a.w.toLowerCase().localeCompare(b.w.toLowerCase(), "ru"));
+    if (!all.length) { el.innerHTML = `<div class="empty">Все слова выучены 🎉</div>`; return; }
+    el.appendChild(buildGroup(`Все слова (${all.length})`,
+      all.map(({ w, cat }) => wordCell(w, cat)), "word-row"));
+    return;
+  }
+
+  let total = 0;
+  for (const cat in GROUPS) {
+    const words = GROUPS[cat].filter(keep);
+    if (!words.length) { continue; }
+    total += words.length;
+    el.appendChild(buildGroup(`${cat} (${words.length})`, words.map(w => wordCell(w)), "word-row"));
+  }
+  if (!total) { el.innerHTML = `<div class="empty">Все слова выучены 🎉</div>`; }
+}
+
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }) + ", " +
+         d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+}
+function renderHistory() {
+  const el = $("historylist");
+  el.innerHTML = "";
+  if (!history.length) {
+    el.innerHTML = `<div class="empty">История пуста — сыграй первую игру 🙂</div>`;
+    return;
+  }
+  const ul = document.createElement("ul");
+  history.forEach(h => {
+    const li = document.createElement("li");
+    li.className = "hist-row";
+    li.innerHTML = `<span>${fmtDate(h.ts)}</span><span class="hist-right">${tally(h.green ?? 0, h.red ?? 0)}</span>`;
+    ul.appendChild(li);
+  });
+  el.appendChild(ul);
+}
+
+$("viewbtn").onclick = () => {
+  renderView();
+  $("viewlist").scrollTop = 0;
+  show("view");
+};
+$("onlyunlearned").addEventListener("change", renderView);
+document.querySelectorAll(".mode-btn").forEach(b => {
+  b.onclick = () => {
+    viewMode = b.dataset.mode;
+    document.querySelectorAll(".mode-btn").forEach(x => x.classList.toggle("active", x === b));
+    renderView();
+  };
+});
+$("viewback").onclick = () => goStart();
+
+document.querySelectorAll(".hist-open").forEach(b => {
+  b.onclick = () => {
+    renderHistory();
+    $("historylist").scrollTop = 0;
+    show("history");
+  };
+});
+$("histback").onclick = () => goStart();
+$("quitbtn").onclick = () => {
+  if (confirm("Завершить игру? Игра не попадёт в историю, но баллы за отвеченные слова сохранятся.")) { stopTimer(); goStart(); }
+};
+
+$("playbtn").onclick = () => start();
+$("nextbtn").onclick = next;
+$("restartbtn").onclick = () => goStart();
+
+$("infobtn").onclick = () => $("infonote").classList.toggle("hidden");
+
+renderStart();
+</script>
+</body>
+</html>
